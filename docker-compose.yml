@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  # REST API
+  api:
+    container_name: api
+    build: ./api
+    ports:
+      - "4000:4000"
+    links:
+      - database
+    environment:
+      - MONGO_DATABASE=tictactoedb
+      - MONGO_USER=admin
+      - MONGO_PASSWORD=admin
+      - MONGO_HOST=database
+    depends_on: 
+      - database
+    volumes: 
+      - .:/app
+    networks:
+      - app-network
+    command: npm run dev
+
+  # Front
+  frontend:
+    build: ./client
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - app-network
+    command: npm start
+    
+  # Mongodb database
+  database:
+    container_name: tictactoedb
+    image: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+    logging:
+      driver: none
+
+networks:
+  app-network:
+    driver: 'bridge'
